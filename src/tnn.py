@@ -54,16 +54,16 @@ class TreeModelContainer(nn.Module):
         self.is_tree = (model.type == Tree)
     def forward(self, x):
         return self.model(x)
-    def expected_value(self, f, x):
+    def expected_value(self, f, x, training=False):
         '''
         If self.model is a Tree, returns E(f(path(x)))
         else returns f(model(x))
         
         '''
         if self.is_tree:
-            return self.model.expected_value(f, x)
+            return self.model.expected_value(f, x, training= training)
         else:
-            return f(self.model(x))
+            return f(self.model(x, training=training))
     
 
 class Tree(nn.Module):
@@ -95,7 +95,7 @@ class Tree(nn.Module):
         # puts children in containers
         self.children = [TreeModelContainer(child) for child in children]
 
-    def forward(self, x, select_max=True):
+    def forward(self, x, select_max=True, training=False):
         """
         TODO
         Samples a path, and passes input thru the sampled path.
@@ -109,15 +109,15 @@ class Tree(nn.Module):
             # return prediction of the most probable model
             index = torch.argmax(probs)
             model = self.children[index]
-            return model(x)
+            return model(x, training=training)
         else:
             # return prediction of a model, sampled from categorized(probs)
             dist = Categorical(probs)
             index = dist.sample()
             model = self.children[index]
-            return model(x)
+            return model(x, training=training)
 
-    def expected_value(self, f, x, eps=None):
+    def expected_value(self, f, x, eps=None, training=False):
         """
         Returns E(f(Path(x))). If eps is not none, paths with probability < eps are skipped
         """
@@ -131,5 +131,6 @@ class Tree(nn.Module):
         for index, p in enumerate(probs):
             # get model - model is TreeModelContainer, so it has expected_value()
             model = self.children[index]
-            E += p * model.expected_value(f, x)
+            E += p * model.expected_value(f, x, training=training)
         return E
+
