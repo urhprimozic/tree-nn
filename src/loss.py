@@ -6,9 +6,10 @@ import torch
 
 
 def EMSG(output, model):
-    pass
+    raise NotImplementedError("TODO")
 
 def ROMSG(output, model, dim=None):
+    raise NotImplementedError("TODO")
     '''
     Relu of One Minus Sizeof Grad (prebere se rom es đi)
     TODO
