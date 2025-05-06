@@ -52,8 +52,8 @@ class TreeModelContainer(nn.Module):
         super().__init__(*args, **kwargs)
         self.model = model 
         self.is_tree = (model.type == Tree)
-    def forward(self, x):
-        return self.model(x)
+    def forward(self, x, training=False):
+        return self.model(x, training=training)
     def expected_value(self, f, x, training=False):
         '''
         If self.model is a Tree, returns E(f(path(x)))
