@@ -119,24 +119,45 @@ class Tree(nn.Module):
 
         if select_max=True, always take the most probable path TODO
         """
+                # if input is unbatched, batch it first 
+        unbatched=False
+        if x.dim() == 1:
+            unbatched = True 
+            x = torch.reshape(x, (1, x.shape[0]))
 
         # if head exists, use it
         if self.head is not None:
             x = self.head(x)
         # get probabilities
         probs = self.distribution(x)
-
+        sample=None
         if select_max:
             # return prediction of the most probable model
-            index = int(torch.argmax(probs).item())
-            model = self.branches[index]
-            return model(x, training=training)
+            sample =  torch.argmax(probs, dim=1) 
         else:
             # return prediction of a model, sampled from categorized(probs)
             dist = Categorical(probs)
-            index = dist.sample().item()
-            model = self.branches[index]
-            return model(x, training=training)
+            sample = dist.sample()
+
+        outputs = [None] * probs.shape[0]  # placeholder
+
+        for index, branch in enumerate(self.branches):
+            # Find rows where samples == model_idx
+            mask = (sample == index)
+            if mask.any():
+                # collect x, where this branch was sampled
+                x_subset = x[mask] 
+                # map whole batch
+                out_subset = branch(x_subset, training=training) 
+                # Put back into outputs
+                indices = mask.nonzero(as_tuple=True)[0]
+                for j, idx in enumerate(indices):
+                    outputs[idx] = out_subset[j]
+        outputs = torch.stack(outputs, dim=0)
+
+        if unbatched:
+            outputs = torch.reshape(outputs, outputs[0].shape)
+        return outputs
 
     def expected_value(self, f, x, eps=None, training=False):
         """
