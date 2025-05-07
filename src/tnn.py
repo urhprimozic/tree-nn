@@ -196,5 +196,8 @@ class Tree(nn.Module):
             E = torch.reshape(E, E[0].shape)
             return E
         return E
+    
+    def E_mse(self, x, z):
+        return self.expected_value(lambda u : (u - z)**2, x).mean()
         
         
