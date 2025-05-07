@@ -2,8 +2,22 @@
 Tree Neural Networks with decision units
 
 # Ideja 
+![mlp vs tree](img/MLPvsTree_demo.png)
 izmenjaje uporabljamo Tree layer in nek drug NN layer (recimo fully connected)..
 
+![Skica ideje](img/skica.png)
+
+Eno drevo ima več otrok = možnih modelov, skozi katere se pošlje input. Decision unit izbere eno pot za input s tem, da za vsako pot vrne verjetnost P(pot|input).
+
+Vsaka pot je lahko svoj model. V demotu zgoraj imamo dve poti, obe sta dve mali mreži. V praksi bi bili tudi otroci dreves drevesa.
+ 
+Head je (neobvezen) model, ki spremeni input, preden gre ta skozi drevo. To je samo zato, da lahko za izbiro poti uporabimo bolj komplicirano funckijo. V demo primeru je head ena zelo majhna mreža Linear(2,2).
+
+Feedforward vs Tree
+Učenje  bi v teoriji moralo biti enako hitro, saj moramo v obeh primerih čez vse parametre. V praksi se mi Feedforward uči hitreje. Pomojem bi se Tree dalo bolj spretno implementirat (ampak ni blazno počasen).
+Napoved vrednosti za en input v drevesu dela hitreje, saj ne rabim obiskati vseh parametrov. V demo primeru moram za izračun enega modela samo skozi dobro polovico parametrov. Če bomo imeli drevo globine d (torej bodo otroci tudi drevesa...), bomo morali narediti eksponentno (v d) manj korakov.
+
+Lep pozdrav,
 ## Training
 - lahko izmenjaje treniramo `DecisionUnit` in `NN`
 - oboje skupaj
